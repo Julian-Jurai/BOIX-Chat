@@ -42,7 +42,9 @@ class WebSocketHandler:
 		try:
 			websocket, username = self.connections[key]
 			async for message in websocket:
-				await self.broadcast(message, sender=username, sender_key=key)
+				msg = message.strip()
+				if msg:
+					await self.broadcast(msg, sender=username, sender_key=key)
 		except websockets.exceptions.ConnectionClosedError:
 			del self.connections[key]
 			print(f"[{str(datetime.now())}] [Connection Lost] {username} left the chat room")

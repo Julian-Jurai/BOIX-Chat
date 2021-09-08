@@ -18,23 +18,14 @@ A webchat server and cli client written in python. This project was built to lea
 Useage:
 
 python3 client.py username [uri]
-  - `username` a required argument that represents the name used as the chat participant
-  - `uri` an optional argument that allows the client to be connected to a custom URI
-
+    - `username` a required argument that represents the name used as the chat participant
+    - `uri` an optional argument that allows the client to be connected to a custom URI
 ```
 
-## Debugging
+### Running Locally
 
-### Testing Server using `curl`
+`python3 client.py Julian`
 
-```bash
-curl \
-    --include \
-    --no-buffer \
-    --header "Connection: Upgrade" \
-    --header "Upgrade: websocket" \
-    --header "Host: example.com:80" \
-    --header "Origin: http://example.com:80" \
-    --header "X-USERNAME: Julian" \
-    http://example.com:80/
-```
+### Connecting to hosted server
+
+`python3 client.py Julian ws://boixchat.herokuapp.com`
