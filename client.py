@@ -2,20 +2,14 @@ import asyncio
 import websockets
 import sys
 
-"""
-Start client by running the following in the console
-replacing USERNAME with the actual user name
-
-python3 client.py username
-"""
-
 HOST = "localhost"
 PORT = 21003
 
 class WebSocketClient():
-	def __init__(self, username):
+	def __init__(self, username, uri):
 		self.username = username
 		self.connection = None
+		self.uri = uri
 
 	async def run(self):
 		await asyncio.gather(
@@ -25,9 +19,8 @@ class WebSocketClient():
 		)
 
 	async def connect(self):
-		uri = f"ws://{HOST}:{PORT}"
 		extra_headers = { "X-USERNAME": self.username }
-		self.connection = await websockets.connect(uri, extra_headers=extra_headers)
+		self.connection = await websockets.connect(self.uri, extra_headers=extra_headers)
 
 	async def listen_for_messages(self):
 		while True:
@@ -51,6 +44,13 @@ class WebSocketClient():
 
 
 if __name__ == "__main__":
+
 	username = sys.argv[1]
-	client = WebSocketClient(username)
+
+	try:
+		uri = sys.argv[2]
+	except IndexError:
+		uri = f"ws://{HOST}:{PORT}"
+
+	client = WebSocketClient(username, uri)
 	asyncio.get_event_loop().run_until_complete(client.run())

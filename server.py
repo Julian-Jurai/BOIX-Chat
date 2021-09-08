@@ -3,9 +3,10 @@ from asyncio.streams import start_server
 import websockets
 from datetime import datetime
 from uuid import uuid4
+import os
 
-HOST = "localhost"
-PORT = 21003
+HOST = os.environ.get("HOST", "localhost")
+PORT = int(os.environ.get("PORT", 21003))
 
 class WebSocketHandler:
 	def __init__(self):
