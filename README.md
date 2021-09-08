@@ -4,6 +4,8 @@ A webchat server and cli client written in python. This project was built to lea
 
 ## Installation
 
+The application requires python 3.9 or above
+
 ### Dependencies
 
 `pip install -r requirements.txt`
@@ -12,20 +14,23 @@ A webchat server and cli client written in python. This project was built to lea
 
 `python3 server.py`
 
+### Requirements for connecting to hosted server
+
 ## Running the Client
 
 ```bash
 Useage:
+  python3 client.py <username>
+  python3 client.py <username> [uri]
 
-python3 client.py username [uri]
-    - `username` a required argument that represents the name used as the chat participant
-    - `uri` an optional argument that allows the client to be connected to a custom URI
+  - `username` a required argument that represents the name used as the chat participant
+  - `uri` an optional argument that allows the client to be connected to a custom URI
 ```
 
 ### Running Locally
 
 `python3 client.py Julian`
 
-### Connecting to hosted server
+### Running against hosted server
 
 `python3 client.py Julian ws://boixchat.herokuapp.com`

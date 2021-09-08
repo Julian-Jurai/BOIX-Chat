@@ -1,1 +1,2 @@
 websockets==9.1
+faker==8.12.1

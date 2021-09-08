@@ -1,9 +1,10 @@
 import asyncio
+import os
 from asyncio.streams import start_server
 import websockets
 from datetime import datetime
 from uuid import uuid4
-import os
+from faker import Faker
 
 HOST = os.environ.get("HOST", "localhost")
 PORT = int(os.environ.get("PORT", 21003))
@@ -13,7 +14,7 @@ class WebSocketHandler:
 		self.connections = dict()
 
 	async def connect(self, websocket, _path):
-		username = websocket.request_headers["X-USERNAME"]
+		username = websocket.request_headers.get("X-USERNAME", Faker().slug())
 		key = f"{username}-{uuid4().hex}"
 		self.connections[key] =  (websocket, username)
 
