@@ -14,7 +14,11 @@ class WebSocketHandler:
 		self.connections = dict()
 
 	async def connect(self, websocket, _path):
-		username = websocket.request_headers.get("X-USERNAME", Faker().slug())
+		username = websocket.request_headers.get("X-USERNAME", "")
+
+		if not username:
+			username = Faker().unique.job()
+
 		key = f"{username}-{uuid4().hex}"
 		self.connections[key] =  (websocket, username)
 
