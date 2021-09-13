@@ -33,4 +33,4 @@ Useage:
 
 ### Running against hosted server
 
-`python3 client.py Julian ws://boixchat.herokuapp.com`
+`python3 client.py Julian boix`

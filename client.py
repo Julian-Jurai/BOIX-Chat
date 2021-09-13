@@ -1,5 +1,6 @@
 import asyncio
 import websockets
+import platform
 import sys
 
 HOST = "localhost"
@@ -49,8 +50,13 @@ if __name__ == "__main__":
 
 	try:
 		uri = sys.argv[2]
+		if uri == "boix":
+				uri = "ws://boixchat.herokuapp.com"
 	except IndexError:
 		uri = f"ws://{HOST}:{PORT}"
 
 	client = WebSocketClient(username, uri)
+
+	if platform.system().lower() == "windows":
+			asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 	asyncio.get_event_loop().run_until_complete(client.run())
