@@ -26,7 +26,13 @@ Useage:
 
 ### Running agains local server
 
+### OSX
+
 `python3 client.py --local`
+
+### Windows
+
+`py -3 client.py --local`
 
 ### Running against hosted server
 

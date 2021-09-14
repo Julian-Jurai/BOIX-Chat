@@ -1,6 +1,5 @@
 import asyncio
 import websockets
-import platform
 import sys
 
 HOST = "localhost"
@@ -42,12 +41,6 @@ class WebSocketClient():
 
 		reader = asyncio.StreamReader()
 		pipe = sys.stdin
-
-		if platform.system().lower() == "windows":
-				# https://stackoverflow.com/questions/62412754/python-asyncio-errors-oserror-winerror-6-the-handle-is-invalid-and-runtim
-				# https://bugs.python.org/issue43528
-				asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 		loop = asyncio.get_event_loop()
 		await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), pipe)
 		async for line in reader:
@@ -69,5 +62,10 @@ if __name__ == "__main__":
 	username = input("Please enter a username: \n")
 
 	client = WebSocketClient(username, uri)
+
+	if sys.platform.startswith("win"):
+			# https://stackoverflow.com/questions/62412754/python-asyncio-errors-oserror-winerror-6-the-handle-is-invalid-and-runtim
+			# https://bugs.python.org/issue43528
+			asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 	asyncio.get_event_loop().run_until_complete(client.run())
