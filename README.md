@@ -1,6 +1,6 @@
 # BOIX-Chat
 
-A webchat server and cli client written in python. This project was built to learn about python asyncio and websockets
+A webchat server and CLI client written in python. This project was built to learn about python and asyncio.
 
 ## Installation
 
@@ -20,17 +20,20 @@ The application requires python 3.9 or above
 
 ```bash
 Useage:
-  python3 client.py <username>
-  python3 client.py <username> [uri]
-
-  - `username` a required argument that represents the name used as the chat participant
+  python3 client.py
   - `uri` an optional argument that allows the client to be connected to a custom URI
 ```
 
-### Running Locally
+### Running agains local server
 
-`python3 client.py Julian`
+`python3 client.py --local`
 
 ### Running against hosted server
 
-`python3 client.py Julian boix`
+### OSX
+
+`python3 client.py --remote`
+
+### Windows
+
+`py -3 client.py --remote`
