@@ -19,7 +19,6 @@ The application requires python 3.9 or above
 ```bash
 Useage:
   python3 client.py
-  - `uri` an optional argument that allows the client to be connected to a custom URI
 ```
 
 ## Running agains local server
