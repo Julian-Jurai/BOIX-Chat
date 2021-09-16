@@ -14,8 +14,6 @@ The application requires python 3.9 or above
 
 `python3 server.py`
 
-### Requirements for connecting to hosted server
-
 ## Running the Client
 
 ```bash
@@ -24,7 +22,7 @@ Useage:
   - `uri` an optional argument that allows the client to be connected to a custom URI
 ```
 
-### Running agains local server
+## Running agains local server
 
 ### OSX
 
@@ -34,7 +32,7 @@ Useage:
 
 `py -3 client.py --local`
 
-### Running against hosted server
+## Running against hosted server
 
 ### OSX
 
