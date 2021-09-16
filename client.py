@@ -51,8 +51,10 @@ if __name__ == "__main__":
 	server =  sys.argv[1] if len(sys.argv) > 1 else "--local"
 
 	if server == "--local":
+		print("Connecting to local server\n\n")
 		uri = f"ws://{HOST}:{PORT}"
 	elif server == "--remote":
+		print("Connecting to remote server\n\n")
 		uri = "ws://boixchat.herokuapp.com"
 
 	username = input("Please enter a username: \n")

@@ -20,10 +20,11 @@ class WebSocketHandler:
 			username = Faker().unique.job()
 
 		key = f"{username}-{uuid4().hex}"
-		self.connections[key] =  (websocket, username)
+		self.connections[key] = (websocket, username)
 
 		print(f"[Connection Added] {username} joined the chat room")
 
+		await websocket.send(f"Welcome {username}! You are 1 of {len(self.connections)} members.")
 		await self.broadcast(f"{username} has joined the chat room")
 
 		await self.listen_for_messages(key)
