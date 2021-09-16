@@ -38,34 +38,25 @@ class WebSocketClient():
 
 	async def listen_for_input(self):
 		"""Listens for user input and sends value along"""
-
-		reader = asyncio.StreamReader()
-		pipe = sys.stdin
 		loop = asyncio.get_event_loop()
-		await loop.connect_read_pipe(lambda: asyncio.StreamReaderProtocol(reader), pipe)
-		async for line in reader:
-			msg = line.decode().rstrip()
 
+		while True:
+			line = await loop.run_in_executor(None, sys.stdin.readline)
+			msg = line.rstrip()
 			if msg:
-					await self.connection.send(line.decode().rstrip())
-
+				await self.connection.send(msg)
 
 if __name__ == "__main__":
 
 	server =  sys.argv[1] if len(sys.argv) > 1 else "--local"
 
 	if server == "--local":
-			uri = f"ws://{HOST}:{PORT}"
+		uri = f"ws://{HOST}:{PORT}"
 	elif server == "--remote":
-			uri = "ws://boixchat.herokuapp.com"
+		uri = "ws://boixchat.herokuapp.com"
 
 	username = input("Please enter a username: \n")
 
 	client = WebSocketClient(username, uri)
-
-	if sys.platform.startswith("win"):
-			# https://stackoverflow.com/questions/62412754/python-asyncio-errors-oserror-winerror-6-the-handle-is-invalid-and-runtim
-			# https://bugs.python.org/issue43528
-			asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 	asyncio.get_event_loop().run_until_complete(client.run())
