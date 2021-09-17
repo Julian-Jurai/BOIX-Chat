@@ -51,6 +51,8 @@ class WebSocketHandler:
 				msg = message.strip()
 				if msg:
 					await self.broadcast(msg, sender=username, sender_key=key)
+					await self.handle_command(message)
+
 		except websockets.exceptions.ConnectionClosedError:
 			del self.connections[key]
 			print(f"[Connection Lost] {username} left the chat room")
@@ -66,7 +68,28 @@ class WebSocketHandler:
 			]
 			return (HTTPStatus.OK, response_headers, 'Whoops! Looking for boix eh?'.encode('utf-8'))
 
+	async def handle_command(self, message):
+		cmds = ["/whoisonline"]
 
+		l = [c for c in cmds if c in message]
+		cmd = l[0] if len(l) > 0 else None
+
+		if not cmd:
+			return
+
+		if cmd == "/whoisonline":
+			message = ""
+			if len(self.connections.values()) > 0:
+				message = "Currently Online:\n"
+
+				for websocket, username in self.connections.values():
+					message += f"- {username}\n"
+
+			else:
+				message = "You are the only one here"
+
+			if message:
+				await self.broadcast(message)
 
 if __name__ == "__main__":
 	ws_handler = WebSocketHandler()
