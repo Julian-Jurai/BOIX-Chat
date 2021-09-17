@@ -1,5 +1,7 @@
 # BOIX-Chat
 
+![image](https://user-images.githubusercontent.com/27185026/133705687-0edf79c0-333b-4d40-8c62-448c200e919e.png)
+
 A webchat server and CLI client written in python. This project was built to learn about python and asyncio.
 
 ## Installation
