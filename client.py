@@ -48,7 +48,7 @@ class WebSocketClient():
 
 if __name__ == "__main__":
 
-	server =  sys.argv[1] if len(sys.argv) > 1 else "--local"
+	server =  sys.argv[1] if len(sys.argv) > 1 else "--remote"
 
 	if server == "--local":
 		uri = f"ws://{HOST}:{PORT}"
