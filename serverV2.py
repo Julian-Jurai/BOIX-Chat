@@ -29,6 +29,25 @@ class HandleIncomingMessage():
 		message = f"{connection.username}: {message}"
 		await broadcast(message, exclude_connections=[connection])
 
+class HandleBotCommands():
+	async def __call__(self, connections, connection, broadcast, message=None, **kwargs):
+		if not message:
+			return
+
+		if message == "/whoisonline":
+			await self.handle_whoisonline(connections, broadcast)
+
+
+	async def handle_whoisonline(self, connections, broadcast):
+		if len(connections) > 0:
+			message = "Currently Online:\n"
+			for connection in connections:
+				message += f"- {connection.username}\n"
+		else:
+			message = "You are the only one here"
+
+		await broadcast(message)
+
 class ConnectionManager:
 	def __init__(self, on_open_handlers=[], on_close_handlers=[], on_message_handlers=[]):
 		self.on_open_handlers = on_open_handlers
@@ -96,7 +115,7 @@ class WebSocketServer:
 			PORT,
 			process_request=WebSocketServer.process_request
 		)
-		print(f"Server started on ws://{HOST}:{PORT}")
+		print(f"Server (V2) started on ws://{HOST}:{PORT}")
 		asyncio.get_event_loop().run_until_complete(start_server)
 		asyncio.get_event_loop().run_forever()
 
@@ -116,12 +135,11 @@ class WebSocketServer:
 		]
 		return (HTTPStatus.OK, response_headers, 'Whoops! Looking for boix eh?'.encode('utf-8'))
 
-
 if __name__ == "__main__":
 	connection_manager = ConnectionManager(
 		on_open_handlers=[HandleConnectionOpen()],
 		on_close_handlers=[HandleConnectionClosed()],
-		on_message_handlers=[HandleIncomingMessage()]
+		on_message_handlers=[HandleIncomingMessage(), HandleBotCommands()]
 	)
 
 	server = WebSocketServer.start(connection_manager)

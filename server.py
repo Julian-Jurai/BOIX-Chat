@@ -95,6 +95,6 @@ if __name__ == "__main__":
 	ws_handler = WebSocketHandler()
 
 	start_server = websockets.serve(ws_handler.connect, HOST, PORT, process_request=ws_handler.process_request)
-	print(f"Server started on ws://{HOST}:{PORT}")
+	print(f"Server (V1) started on ws://{HOST}:{PORT}")
 	asyncio.get_event_loop().run_until_complete(start_server)
 	asyncio.get_event_loop().run_forever()
