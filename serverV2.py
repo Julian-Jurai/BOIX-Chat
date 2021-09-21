@@ -36,9 +36,12 @@ class HandleBotCommands():
 
 		if message == "/whoisonline":
 			await self.handle_whoisonline(connections, broadcast)
+		if message == "/whoami":
+			await self.handle_whoami(connection, broadcast)
 
 
 	async def handle_whoisonline(self, connections, broadcast):
+		print(f"[Bot Command Invoked] /whoisonline")
 		if len(connections) > 0:
 			message = "Currently Online:\n"
 			for connection in connections:
@@ -46,6 +49,13 @@ class HandleBotCommands():
 		else:
 			message = "You are the only one here"
 
+		await broadcast(message)
+
+	async def handle_whoami(self, connection, broadcast):
+		print(f"[Bot Command Invoked] /whoami")
+		print(f"[DEBUG] {connection.remote_address}")
+		# connection
+		message = ""
 		await broadcast(message)
 
 class ConnectionManager:
