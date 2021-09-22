@@ -6,7 +6,7 @@ A webchat server and CLI client written in python. This project was built to lea
 
 ## Installation
 
-The application requires python 3.9 or above
+The application requires python 3.9.7
 
 ### Dependencies
 
@@ -14,31 +14,20 @@ The application requires python 3.9 or above
 
 ## Running the Server
 
-`python3 server.py`
+**OSX/Linux**: `python3 server.py`
+
+**Windows**: `py -3 server.py`
 
 ## Running the Client
 
-```bash
-Useage:
-  python3 client.py
-```
-
 ## Running agains local server
 
-### OSX
+**OSX/Linux**: `python3 client.py --local`
 
-`python3 client.py --local`
-
-### Windows
-
-`py -3 client.py --local`
+**Windows**: `py -3 client.py --local`
 
 ## Running against hosted server
 
-### OSX
+**OSX/Linux**: `python3 client.py --remote`
 
-`python3 client.py --remote`
-
-### Windows
-
-`py -3 client.py --remote`
+**Windows**: `py -3 client.py --remote`
