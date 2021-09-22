@@ -9,92 +9,140 @@ from faker import Faker
 HOST = os.environ.get("HOST", "localhost")
 PORT = int(os.environ.get("PORT", 21003))
 
-class WebSocketHandler:
-	def __init__(self):
-		self.connections = dict()
+class HandleConnectionOpen():
+	async def __call__(self, connections, connection, broadcast, **kwargs):
+		message = f"Welcome {connection.username}! You are 1 of {len(connections)} members."
+		await connection.send(message)
+		message = f"{connection.username} has joined the chat room"
+		await broadcast(message)
 
-	async def connect(self, websocket, _path):
-		username = websocket.request_headers.get("X-USERNAME", "")
+class HandleConnectionClosed():
+	async def __call__(self, connections, connection, broadcast, **kwargs):
+		message = f"{connection.username} has left the chat room"
+		await broadcast(message, exclude_connections=[connection])
+
+class HandleIncomingMessage():
+	async def __call__(self, connections, connection, broadcast, message=None, **kwargs):
+		if not message:
+			return
+
+		message = f"{connection.username}: {message}"
+		await broadcast(message, exclude_connections=[connection])
+
+class HandleBotCommands():
+	async def __call__(self, connections, connection, broadcast, message=None, **kwargs):
+		if not message:
+			return
+
+		if message == "/whoisonline":
+			await self.handle_whoisonline(connections, broadcast)
+
+
+	async def handle_whoisonline(self, connections, broadcast):
+		print(f"[Bot Command Invoked] /whoisonline")
+		if len(connections) > 0:
+			message = "Currently Online:\n"
+			for connection in connections:
+				message += f"- {connection.username}\n"
+		else:
+			message = "You are the only one here"
+
+		await broadcast(message)
+
+class ConnectionManager:
+	def __init__(self, on_open_handlers=[], on_close_handlers=[], on_message_handlers=[]):
+		self.on_open_handlers = on_open_handlers
+		self.on_close_handlers = on_close_handlers
+		self.on_message_handlers = on_message_handlers
+		self.connections = set()
+
+	async def add_connection(self, connection, _path):
+		"""
+		Adds a new connection  and runs all functions in on_open_handlers.
+		"""
+
+		self._add_new_connection(connection)
+
+		for handler in self.on_open_handlers:
+			asyncio.create_task(handler(self.connections, connection, self.broadcast))
+
+		try:
+			await self._recieve_messages(connection)
+		except websockets.exceptions.ConnectionClosedError:
+			self._remove_connection(connection)
+
+	def _add_new_connection(self, connection):
+		username = connection.request_headers.get("X-USERNAME", "")
 
 		if not username:
 			username = Faker().unique.job()
 
-		key = f"{username}-{uuid4().hex}"
-		self.connections[key] = (websocket, username)
+		connection.username = username
 
 		print(f"[Connection Added] {username} joined the chat room")
 
-		await websocket.send(f"Welcome {username}! You are 1 of {len(self.connections)} members.")
-		await self.broadcast(f"{username} has joined the chat room")
+		self.connections.add(connection)
 
-		await self.listen_for_messages(key)
+	def _remove_connection(self, connection):
+		print(f"[Connection Closed] {connection.username} left the chat room")
 
-	async def broadcast(self, message, sender=None, sender_key=None):
+		self.connections.remove(connection)
+
+		for handler in self.on_close_handlers:
+			asyncio.create_task(handler(self.connections, connection, self.broadcast))
+
+	async def _recieve_messages(self, connection):
+		async for message in connection:
+			print(f"[Message Received] From: {connection.username} Message: {message}")
+			msg = message.strip()
+			if msg:
+				for handler in self.on_message_handlers:
+					asyncio.create_task(handler(self.connections, connection, self.broadcast, message=msg))
+
+	async def broadcast(self, message, exclude_connections=[]):
 		print(f"[Broadcasting] {message}")
-		for websocket, username in self.connections.values():
-			if sender == username: # Skip sending to the sender
-				continue
+
+		for connection in self.connections.difference(exclude_connections):
 			try:
-				if sender:
-					await websocket.send(f"{sender}: {message}")
-				else:
-					await websocket.send(f"{message}")
+				await connection.send(f"{message}")
 			except websockets.exceptions.ConnectionClosedError:
-				del self.connections[sender_key]
-				print(f"[Connection Lost] {username} left the chat room")
-				await self.broadcast(f"{username} has left the chat room")
+				self._remove_connection(connection)
 
-	async def listen_for_messages(self, key):
-		try:
-			websocket, username = self.connections[key]
-			async for message in websocket:
-				msg = message.strip()
-				if msg:
-					await self.broadcast(msg, sender=username, sender_key=key)
-					await self.handle_command(message)
+class WebSocketServer:
+	def start(connection_manager):
+		start_server = websockets.serve(
+			connection_manager.add_connection,
+			HOST,
+			PORT,
+			process_request=WebSocketServer.process_request
+		)
+		print(f"Server (V2) started on ws://{HOST}:{PORT}")
+		asyncio.get_event_loop().run_until_complete(start_server)
+		asyncio.get_event_loop().run_forever()
 
-		except websockets.exceptions.ConnectionClosedError:
-			del self.connections[key]
-			print(f"[Connection Lost] {username} left the chat room")
-			await self.broadcast(f"{username} has left the chat room")
+	async def process_request(path, request_headers):
+		"""
+		Intercept requests to handle websocket connections
+		or HTTP GET requests.
+		See: https://websockets.readthedocs.io/en/9.0.1/_modules/websockets/legacy/server.html#WebSocketServerProtocol.process_request
+		"""
 
-	async def process_request(server, path, request_headers):
+		print(f"[Incoming Reques] {request_headers}")
+
 		if "Upgrade" in request_headers:
 			return  # Probably a WebSocket connection
-		else:
-			response_headers = [
-				('Content-Type', 'text/plain'),
-				('Connection', 'close'),
-			]
-			return (HTTPStatus.OK, response_headers, 'Whoops! Looking for boix eh?'.encode('utf-8'))
 
-	async def handle_command(self, message):
-		cmds = ["/whoisonline"]
-
-		l = [c for c in cmds if c in message]
-		cmd = l[0] if len(l) > 0 else None
-
-		if not cmd:
-			return
-
-		if cmd == "/whoisonline":
-			message = ""
-			if len(self.connections.values()) > 0:
-				message = "Currently Online:\n"
-
-				for websocket, username in self.connections.values():
-					message += f"- {username}\n"
-
-			else:
-				message = "You are the only one here"
-
-			if message:
-				await self.broadcast(message)
+		response_headers = [
+			('Content-Type', 'text/plain'),
+			('Connection', 'close'),
+		]
+		return (HTTPStatus.OK, response_headers, 'Whoops! Looking for boix eh?'.encode('utf-8'))
 
 if __name__ == "__main__":
-	ws_handler = WebSocketHandler()
+	connection_manager = ConnectionManager(
+		on_open_handlers=[HandleConnectionOpen()],
+		on_close_handlers=[HandleConnectionClosed()],
+		on_message_handlers=[HandleIncomingMessage(), HandleBotCommands()]
+	)
 
-	start_server = websockets.serve(ws_handler.connect, HOST, PORT, process_request=ws_handler.process_request)
-	print(f"Server (V1) started on ws://{HOST}:{PORT}")
-	asyncio.get_event_loop().run_until_complete(start_server)
-	asyncio.get_event_loop().run_forever()
+	server = WebSocketServer.start(connection_manager)
